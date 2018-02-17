@@ -1,0 +1,21 @@
+body{
+	background-color: #555555;
+}
+
+div.container{
+	max-width: 800px;
+	margin: auto;
+	display: block;
+}
+
+canvas#demoCanvas{
+	background-color: #FFFFFF;
+	border: 1px solid black;
+	margin: auto;
+	display: block;
+}
+
+button{
+	height:50px;
+	width: 100px;
+}
