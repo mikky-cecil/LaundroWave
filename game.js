@@ -27,6 +27,21 @@ class Laundromat {
 		// let player go into the negatives for now, will implement debt handling later
 		this.money -= this.rent;
 	}
+
+	findMachine(machineId){
+		var list = [];
+		if (machineId.startsWith("W")){
+			list = this.machines.washers;
+		}else if (machineId.startsWith("D")){
+			list = this.machines.dryers;
+		}else if (machineId.startsWith("C")){
+			list = this.machines.changeMachines;
+		}
+
+		return list.find(function(machine){
+			return (machine.objectId == machineId);
+		});
+	}
 }
 
 class Customer {
@@ -44,12 +59,15 @@ class Customer {
 	doLaundry(laundromat){
 		if (!laundromat.machines.changeMachines[0].giveChange(this, 4)){
 			this.leave("couldn't get change");
+			return;
 		}
-		if (!laundromat.machines.washers[0].wash(laundromat, this, this.loads[0])){
+		if (!laundromat.machines.washers[0].wash(this, this.loads[0])){
 			this.leave("couldn't wash clothes");
+			return;
 		}
-		if (!laundromat.machines.dryers[0].dry(laundromat, this, this.loads[0])){
+		if (!laundromat.machines.dryers[0].dry(this, this.loads[0])){
 			this.leave("couldn't dry clothes");
+			return;
 		}
 		console.log("Customer is happy!");
 		this.hasLeft = true;
@@ -71,8 +89,9 @@ class Load {
 var idCounter = 0;
 
 class Machine {
-	constructor(){
-		this.objectId = Machine.newId();
+	constructor(laundromat){
+		this.laundromat = laundromat;
+		this.objectId = 0;
 		this.name = "";
 		this.cost = 0;
 		this.working = true;
@@ -80,15 +99,15 @@ class Machine {
 		this.duration = 0;
 	}
 
-	static newId(){
+	static newId(typeId){
 		idCounter++;
-		return idCounter;
+		return typeId + idCounter;
 	}
 
-	payMachine(laundromat, customer){
+	payMachine(customer){
 		if (customer.usableMoney >= this.cost){
 			customer.usableMoney -= this.cost;
-			laundromat.usableMoney += this.cost;
+			this.laundromat.usableMoney += this.cost;
 			return true;
 		}else{
 			return false;
@@ -104,15 +123,20 @@ class Machine {
 }
 
 class Washer extends Machine {
-	constructor(){
-		super();
+	constructor(laundromat){
+		super(laundromat);
+		this.objectId = Washer.newId();
 		this.name = "washer";
 		this.duration = 3;
 		this.cost = 2;
 	}
 
-	wash(laundromat, customer, load){
-		if (this.working && this.timeUntilFree == 0 && super.payMachine(laundromat, customer)){
+	static newId(){
+		return super.newId("W");
+	}
+
+	wash(customer, load){
+		if (this.working && this.timeUntilFree == 0 && super.payMachine(customer)){
 			load.washed = true;
 			this.timeUntilFree = this.duration;
 			return true;
@@ -123,19 +147,24 @@ class Washer extends Machine {
 }
 
 class Dryer extends Machine {
-	constructor(){
-		super();
+	constructor(laundromat){
+		super(laundromat);
+		this.objectId = Dryer.newId();
 		this.name = "dryer";
 		this.duration = 3;
 		this.cost = 2;
 	}
 
-	dry(laundromat, customer, load){
+	static newId(){
+		return super.newId("D");
+	}
+
+	dry(customer, load){
 		if (!load.washed){
 			return false;
 		}
 
-		if (this.working && this.timeUntilFree == 0 && super.payMachine(laundromat, customer)){
+		if (this.working && this.timeUntilFree == 0 && super.payMachine(customer)){
 			load.dried = true;
 			this.timeUntilFree = this.duration;
 			return true;
@@ -146,16 +175,21 @@ class Dryer extends Machine {
 }
 
 class ChangeMachine extends Machine {
-	constructor(){
-		super();
+	constructor(laundromat){
+		super(laundromat);
+		this.objectId = ChangeMachine.newId();
 		this.name = "change machine";
 		this.capacity = 500;
 		this.currentChange = 0;
 	}
 
-	addChange(laundromat, change){
-		if (change <= laundromat.money){
-			laundromat.money -= change;
+	static newId(){
+		return super.newId("C");
+	}
+
+	addChange(change){
+		if (change <= this.laundromat.money){
+			this.laundromat.money -= change;
 			this.currentChange += change;
 			if (this.currentChange > 0){
 				this.working = true;
@@ -189,13 +223,16 @@ class Game {
 		this.laundromat = new Laundromat();
 		this.laundromat.money = 6000;
 		this.laundromat.rent = 500;
-		this.laundromat.machines.changeMachines.push(new ChangeMachine());
+		this.laundromat.machines.changeMachines.push(new ChangeMachine(this.laundromat));
 		this.laundromat.machines.changeMachines[0].addChange(this.laundromat, 50);
-		this.laundromat.machines.washers.push(new Washer());
-		this.laundromat.machines.dryers.push(new Dryer());
+		this.laundromat.machines.washers.push(new Washer(this.laundromat));
+		this.laundromat.machines.dryers.push(new Dryer(this.laundromat));
 		this.customers = [];
 
 		console.log("Congrats, you now own a laundromat! Your rent is $500/month, and you own 3 machines: a change machine, a washer, and a dryer. You have $6,000 saved up just for this laundromat. Good luck!");
+		console.log(this.laundromat.machines.washers[0]);
+		console.log(this.laundromat.machines.dryers[0]);
+		console.log(this.laundromat.machines.changeMachines[0]);
 
 		this.speed = 100;
 
@@ -236,7 +273,6 @@ class Game {
 		var machines = this.laundromat.machines.washers.concat(this.laundromat.machines.dryers);
 		for (var i = 0; i < machines.length; i++){
 			machines[i].passTime(tickSize);
-			console.log(machines[i]);
 		}
 
 		// Add customers
@@ -244,20 +280,27 @@ class Game {
 			this.customers.push(new Customer(this.laundromat));
 		}
 
+		// Remove customers that have left
 		this.customers = this.customers.filter(function(c){
 			return !c.hasLeft;
 		});
 
+		// Update UI
 		console.log(this.month + "/" + this.day + ": You have $" + this.laundromat.money);
 	}
 
 }
 
+var game;
+
 function initGame(){
-	var game = new Game();
+	game = new Game();
 }
 
-
+function handleChangeEvent(changeMachineId, change){
+	var laundromat = game.laundromat;
+	laundromat.findMachine(changeMachineId).addChange(change);
+}
 
 
 
