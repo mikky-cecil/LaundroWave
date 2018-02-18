@@ -2,7 +2,11 @@ class Laundromat {
 	constructor(){
 		this.money = 0;
 		this.rent = 0;
-		this.machines = [];
+		this.machines = {
+			"washers": [],
+			"dryers" : [],
+			"changeMachines": []
+		};
 		// this.layout = Laundromat.newEmptyLayout(50, 50);
 	}
 
@@ -26,9 +30,34 @@ class Laundromat {
 }
 
 class Customer {
-	constructor(){
+	constructor(laundromat){
 		this.money = 20;
 		this.usableMoney = 0;
+		this.loads = [];
+		this.loads.push(new Load());
+		this.loads.push(new Load());
+		this.hasLeft = false;
+		
+		this.doLaundry(laundromat);
+	}
+
+	doLaundry(laundromat){
+		if (!laundromat.machines.changeMachines[0].giveChange(this, 4)){
+			this.leave("couldn't get change");
+		}
+		if (!laundromat.machines.washers[0].wash(laundromat, this, this.loads[0])){
+			this.leave("couldn't wash clothes");
+		}
+		if (!laundromat.machines.dryers[0].dry(laundromat, this, this.loads[0])){
+			this.leave("couldn't dry clothes");
+		}
+		console.log("Customer is happy!");
+		this.hasLeft = true;
+	}
+
+	leave(message){
+		console.log("Customer has left. " + message);
+		this.hasLeft = true;
 	}
 }
 
@@ -47,6 +76,8 @@ class Machine {
 		this.name = "";
 		this.cost = 0;
 		this.working = true;
+		this.timeUntilFree = 0;
+		this.duration = 0;
 	}
 
 	static newId(){
@@ -54,7 +85,7 @@ class Machine {
 		return idCounter;
 	}
 
-	performAction(laundromat, customer){
+	payMachine(laundromat, customer){
 		if (customer.usableMoney >= this.cost){
 			customer.usableMoney -= this.cost;
 			laundromat.usableMoney += this.cost;
@@ -63,18 +94,25 @@ class Machine {
 			return false;
 		}
 	}
+
+	passTime(time){
+		if (this.duration == 0 || this.timeUntilFree == 0){
+			return;
+		}
+		this.timeUntilFree -= time;
+	}
 }
 
 class Washer extends Machine {
 	constructor(){
 		super();
 		this.name = "washer";
-		this.timeUntilFree = 0;
-		this.duration = 40;
+		this.duration = 3;
+		this.cost = 2;
 	}
 
-	performAction(laundromat, customer, load){
-		if (super.performAction(laundromat, customer)){
+	wash(laundromat, customer, load){
+		if (this.working && this.timeUntilFree == 0 && super.payMachine(laundromat, customer)){
 			load.washed = true;
 			this.timeUntilFree = this.duration;
 			return true;
@@ -88,16 +126,16 @@ class Dryer extends Machine {
 	constructor(){
 		super();
 		this.name = "dryer";
-		this.timeUntilFree = 0;
-		this.duration = 60;
+		this.duration = 3;
+		this.cost = 2;
 	}
 
-	performAction(laundromat, customer, load){
+	dry(laundromat, customer, load){
 		if (!load.washed){
 			return false;
 		}
 
-		if (super.performAction(laundromat, customer)){
+		if (this.working && this.timeUntilFree == 0 && super.payMachine(laundromat, customer)){
 			load.dried = true;
 			this.timeUntilFree = this.duration;
 			return true;
@@ -151,9 +189,11 @@ class Game {
 		this.laundromat = new Laundromat();
 		this.laundromat.money = 6000;
 		this.laundromat.rent = 500;
-		this.laundromat.machines.push(new ChangeMachine());
-		this.laundromat.machines.push(new Washer());
-		this.laundromat.machines.push(new Dryer());
+		this.laundromat.machines.changeMachines.push(new ChangeMachine());
+		this.laundromat.machines.changeMachines[0].addChange(this.laundromat, 50);
+		this.laundromat.machines.washers.push(new Washer());
+		this.laundromat.machines.dryers.push(new Dryer());
+		this.customers = [];
 
 		console.log("Congrats, you now own a laundromat! Your rent is $500/month, and you own 3 machines: a change machine, a washer, and a dryer. You have $6,000 saved up just for this laundromat. Good luck!");
 
@@ -165,27 +205,49 @@ class Game {
 		}, this.speed);
 	}
 
-	passTime(){
+	passTime(tickSize){
 		// this.minute += 10;
 		// if (this.minute == 60){
 		// 	this.hour++;
 		// 	this.minute = 0;
 		// }
-		this.hour++;
+		this.hour += tickSize;
 		if (this.hour == 22){
 			this.day++;
 			this.hour = 8;
 		}
 		if (this.day == 31){
-			this.laundromat.payRent();
-			console.log("Rent paid on " + this.month + "/" + this.day);
 			this.month++;
 			this.day = 1;
 		}
 	}
 
 	gameLoop(){
-		this.passTime();
+		var tickSize = 1; // hr
+		this.passTime(tickSize);
+
+		// Pay rent
+		if (this.day == 1 && this.hour == 8 && this.minute == 0){
+			this.laundromat.payRent();
+			console.log("Rent paid on " + this.month + "/" + this.day);
+		}
+
+		// Pass time on machines
+		var machines = this.laundromat.machines.washers.concat(this.laundromat.machines.dryers);
+		for (var i = 0; i < machines.length; i++){
+			machines[i].passTime(tickSize);
+			console.log(machines[i]);
+		}
+
+		// Add customers
+		if (this.hour % 2 == 0){
+			this.customers.push(new Customer(this.laundromat));
+		}
+
+		this.customers = this.customers.filter(function(c){
+			return !c.hasLeft;
+		});
+
 		console.log(this.month + "/" + this.day + ": You have $" + this.laundromat.money);
 	}
 
