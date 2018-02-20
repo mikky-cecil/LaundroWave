@@ -8,6 +8,10 @@ div.container{
 	display: block;
 }
 
+div.row{
+	margin-top: 10%;
+}
+
 canvas#demoCanvas{
 	background-color: #FFFFFF;
 	border: 1px solid black;
@@ -15,7 +19,6 @@ canvas#demoCanvas{
 	display: block;
 }
 
-button{
-	height:50px;
-	width: 100px;
+#objectActionButton, #objectFixButton, #pauseButton, #continueButton, #displayInfo{
+	display: none;
 }

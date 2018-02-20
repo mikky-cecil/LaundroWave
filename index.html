@@ -1,5 +1,10 @@
 <head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 	<link rel="stylesheet" href="./style.css">
+
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 	<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
 	<script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
@@ -9,8 +14,90 @@
 
 <body>
 	<div class="container">
-		<canvas id="demoCanvas" width="800" height="500"></canvas>
-		<br><br><center><button onClick="initGameAndUI();">Go!</button></center>
+
+		<!-- Game Screen -->
+		<div class="row">
+			<div class="col">
+				<canvas id="demoCanvas" width="500" height="500"></canvas>
+			</div>
+			<div class="col">
+				<!-- Game Time Buttons -->
+				<button id="startButton" class="btn btn-success" onClick="initGameAndUI();">Start Game</button>
+				<button id="pauseButton" class="btn btn-warning" onClick="pauseGame();">Pause Game</button>
+				<button id="continueButton" class="btn btn-success" onClick="continueGame();">Continue Game</button>
+				<br><br>
+				
+				<!-- Displaying Information -->
+				<div id="displayMoney" class="card bg-light">
+					<div class="card-body">
+						<h4 class="card-title">Current Funds</h4>
+						$<span id="currentFunds"></span>
+					</div>
+				</div>
+				<br>
+				<div id="alertSpace"></div>
+				<div id="displayInfo" class="card bg-light">
+					<div class="card-body">
+						<h4 class="card-title">Info</h4>
+						<p>info will go here</p>
+						<button id="objectActionButton" class="btn btn-primary"></button>
+						<button id="objectFixButton" class="btn btn-danger"></button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Add Change Modal -->
+		<div class="modal fade" id="addChangeModal" tabindex="-1" role="dialog" aria-labelledby="addChangeModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			    	<div class="modal-header">
+				    	<h5 class="modal-title" id="addChangeModalLabel">Add Change</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+				        </button>
+				    </div>
+
+			    	<div class="modal-body">
+			    		<form id="addChangeForm">
+		    				<label for="changeToAdd">How much?</label>
+		    				<div class="input-group">
+			    				<span class="input-group-addon">$</span>
+		    					<input type="text" class="form-control" id="changeToAdd"></input>
+		    					<input type="hidden" id="machineId"></input>
+		    				</div>
+			    		</form>
+				    </div>
+
+				    <div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+						<button type="button" class="btn btn-primary" onClick="addChangeButton()">Add Change</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Add Change Result Modal -->
+		<div class="modal fade" id="addChangeResultModal" tabindex="-1" role="dialog" aria-labelledby="addChangeResultModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+			    <div class="modal-content">
+			    	<div class="modal-header">
+				    	<h5 class="modal-title" id="addChangeResultModalLabel">Add Change</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+				        </button>
+				    </div>
+
+			    	<div class="modal-body">
+				    </div>
+
+				    <div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 	</div>
 </body>
 

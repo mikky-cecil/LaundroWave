@@ -49,6 +49,7 @@ class Laundromat {
 	payRent(){
 		// let player go into the negatives for now, will implement debt handling later
 		this.money -= this.rent;
+		game.ui.updateFundsDisplay();
 	}
 
 	findMachine(machineId){
@@ -261,6 +262,10 @@ class ChangeMachine extends Machine {
 		if (change <= this.currentChange){
 			this.currentChange -= change;
 			customer.usableMoney += change;
+			if (game.ui.isObjectDisplayed(this.objectId)){
+				console.log("Updating the display!");
+				game.ui.displayObjectInfo(this.objectId);
+			}
 			return true;
 		}else{
 			this.working = false;
@@ -285,6 +290,7 @@ class Game {
 		this.ui = new UI(this);
 		this.ui.initUI("demoCanvas");
 		this.ui.updateGrid();
+		this.ui.updateFundsDisplay(this);
 	}
 
 	setupGame(){
