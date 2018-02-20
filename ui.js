@@ -218,14 +218,10 @@ function addChangeButton(){
 
 	if (game.laundromat.findMachine(machineId).addChange(change)){
 		$("#addChangeModal").modal("hide");
-		// $("#addChangeResultModal").modal("show");
-		// $("#addChangeResultModal .modal-body").text("Success!");
 		$("#alertSpace").prepend(UI.createAlert("Added $" + change + " to the change machine.", "alert-success"));
 		game.ui.displayObjectInfo(machineId);
 	}else{
 		$("#addChangeModal").modal("hide");
-		// $("#addChangeResultModal").modal("show");
-		// $("#addChangeResultModal .modal-body").text("Not enough cash!");
 	}
 
 }
