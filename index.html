@@ -1,6 +1,7 @@
 <head>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 	<link rel="stylesheet" href="./style.css">
+	<link href="https://fonts.googleapis.com/css?family=Nova+Square|Iceberg|Inconsolata|Audiowide" rel="stylesheet">
 
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -8,6 +9,8 @@
 
 	<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
 	<script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
+
+	<script src="https://use.fontawesome.com/91d6c4113e.js"></script>
 	<script src="./game.js"></script>
 	<script src="./ui.js"></script>
 </head>
@@ -21,25 +24,39 @@
 				<canvas id="demoCanvas" width="500" height="500"></canvas>
 			</div>
 			<div class="col">
+				<h3 id="gameTitle">LaundroWave</h3>
 				<!-- Game Time Buttons -->
 				<button id="startButton" class="btn btn-success" onClick="initGameAndUI();">Start Game</button>
-				<button id="pauseButton" class="btn btn-warning" onClick="pauseGame();">Pause Game</button>
-				<button id="continueButton" class="btn btn-success" onClick="continueGame();">Continue Game</button>
+				<button id="pauseButton" class="btn btn-warning" onClick="pauseGame();"><i class="fa fa-pause" aria-hidden="true"></i></button>
+				<button id="continueButton" class="btn btn-success" onClick="continueGame();"><i class="fa fa-play" aria-hidden="true"></i></button>
+				<button id="fastButton" class="btn btn-primary" onClick="fastForward();"><i class="fa fa-forward" aria-hidden="true"></i></button>
+				<button id="fasterButton" class="btn btn-primary" onClick="fasterForward();"><i class="fa fa-fast-forward" aria-hidden="true"></i></button>
 				<br><br>
 				
 				<!-- Displaying Information -->
+				<h4><span id="displayDate" class="badge badge-light">1/1</span><span id="displayTime" class="badge badge-dark">8:00AM</span></h4><br><br>
 				<div id="displayMoney" class="card bg-light">
 					<div class="card-body">
-						<h4 class="card-title">Current Funds</h4>
+						<!-- <h4 class="card-title">Current Funds</h4> -->
 						$<span id="currentFunds"></span>
 					</div>
 				</div>
+				<!-- <div class="input-group">
+    				<span class="input-group-addon">$</span>
+					<input type="text" class="form-control" id="currentFunds"></input>
+				</div> -->
 				<br>
 				<div id="alertSpace"></div>
 				<div id="displayInfo" class="card bg-light">
+					<div class="card-header">
+						<span class="card-title">Info</span>
+						<span id="needsServiceBadge" class="badge badge-danger">Needs Service</span>
+						<span id="inUseBadge" class="badge badge-primary">In Use</span>
+					</div>
 					<div class="card-body">
-						<h4 class="card-title">Info</h4>
-						<p>info will go here</p>
+						info will go here
+					</div>
+					<div class="card-footer">
 						<button id="objectActionButton" class="btn btn-primary"></button>
 						<button id="objectFixButton" class="btn btn-danger"></button>
 					</div>

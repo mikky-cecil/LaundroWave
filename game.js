@@ -158,6 +158,11 @@ class Machine {
 		return typeId + idCounter;
 	}
 
+	/*set working(working){
+		this.working = working;
+		this.dispatchEvent(workingChanged);
+	}*/
+
 	payMachine(customer){
 		if (customer.usableMoney >= this.cost){
 			customer.usableMoney -= this.cost;
@@ -263,8 +268,8 @@ class ChangeMachine extends Machine {
 			this.currentChange -= change;
 			customer.usableMoney += change;
 			if (game.ui.isObjectDisplayed(this.objectId)){
-				console.log("Updating the display!");
 				game.ui.displayObjectInfo(this.objectId);
+				// TODO: THIS NEEDS TO BE AN EVENT!!!! decoupling and all that!!!!
 			}
 			return true;
 		}else{
@@ -281,7 +286,7 @@ class Game {
 		this.day = 1;
 		this.hour = 8;
 		this.minute = 0;
-		this.speed = 100;
+		this.speed = 1000; //milliseconds per hour
 
 		this.laundromat = new Laundromat();
 		this.setupGame();
@@ -357,6 +362,7 @@ class Game {
 	gameLoop(){
 		var tickSize = 1; // hr
 		this.passTime(tickSize);
+		this.ui.updateTimeDisplay();
 
 		// Pay rent
 		if (this.day == 1 && this.hour == 8 && this.minute == 0){

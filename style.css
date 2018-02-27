@@ -19,6 +19,34 @@ canvas#demoCanvas{
 	display: block;
 }
 
-#objectActionButton, #objectFixButton, #pauseButton, #continueButton, #displayInfo{
+#gameTitle{
+	font-family: 'Audiowide', cursive;
+	background: linear-gradient(to top, #FCD3D3 25%, #F7CAF9 50%, #66E2FF 75%);
+	/*background: linear-gradient(to top, #21BAA0 0%, #BA509A 100%);*/
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent
+}
+
+#objectActionButton, #objectFixButton, #pauseButton, #continueButton, #fastButton, #fasterButton, #displayInfo, #displayMoney, #displayDate, #displayTime, #needsRepairBadge, #inUseBadge{
 	display: none;
+}
+
+#pauseButton, #continueButton, #fastButton, #fasterButton{
+	width: 23%;
+}
+
+#displayDate{
+	border: 1px solid black;
+}
+
+#displayTime{
+	/*font-family: 'Nova Square', 'cursive';*/
+	/*font-family: 'Inconsolata', 'monospace';*/
+	font-family: 'Iceberg', cursive;
+	white-space: pre;
+}
+
+#displayInfo>.card-header{
+	font-size: 18px;
+	font-weight: 500;
 }

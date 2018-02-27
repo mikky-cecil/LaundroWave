@@ -168,48 +168,135 @@ class UI{
 	displayObjectInfo(machineId){
 		var machine = this.game.laundromat.findMachine(machineId);
 
-		$("#displayInfo>.card-body>p").text(machineId);
-		$("#displayInfo").data("objectId", machineId);
+		var card = "#displayInfo";
+		var title = "#displayInfo>.card-header>.card-title";
+		var info = "#displayInfo>.card-body";
+		var footer = "#displayInfo>.card-footer";
+		var actionButton = "#objectActionButton";
+		var actionButtonContainer = "#displayInfo>.card-footer";
+
+		$(info).text(machineId);
+		$("#needsServiceBadge, #inUseBadge").hide();
+		$(card).data("objectId", machineId);
+
+		if (!machine.working){
+			$("#needsServiceBadge").show();
+		}
 
 		if (machine.objectId.startsWith("C")){
-			$("#displayInfo>.card-body>.card-title").text("Change Machine");
-			$("#displayInfo>.card-body>p").html("<b>Current Change:</b> " + machine.currentChange);
-			$("#objectActionButton").text("Add Change").show().click(function(){
+			$(title).text("Change Machine");
+			$(info).html("<b>Current Change:</b> " + machine.currentChange);
+			$(actionButtonContainer).show();
+			$(actionButton).text("Add Change").show().click(function(){
 				 $("#addChangeModal").modal("show");
 				 $("#addChangeModal form #machineId").val(machineId);
 			});
-		}else if (machine.objectId.startsWith("W")){
-			$("#displayInfo>.card-body>.card-title").text("Washing Machine");
-			$("#objectActionButton").hide();
-		}else if (machine.objectId.startsWith("D")){
-			$("#displayInfo>.card-body>.card-title").text("Dryer");
-			$("#objectActionButton").hide();
+		}else if (machine.objectId.startsWith("W") || machine.objectId.startsWith("D")){
+			if (machine.objectId.startsWith("W")){
+				$(title).text("Washing Machine");
+			}else{
+				$(title).text("Dryer");
+			}
+
+			if (machine.timeUntilFree > 0){
+				$("#inUseBadge").show();
+				$(info).html("<b>Time left:</b> " + machine.timeUntilFree);
+			}else{
+				$(info).text("");
+			}
+			$(actionButtonContainer).hide();
 		}
 
-		$("#displayInfo").show();
+		$(card).show();
 	}
 
-	updateFundsDisplay(game){
-		$("#currentFunds").text(game.laundromat.money);
+	updateFundsDisplay(){
+		$("#currentFunds").text(this.game.laundromat.money);
+	}
+
+	updateTimeDisplay(){
+		$("#displayDate").text(this.game.month + "/" + this.game.day);
+		var timeText;
+		var hour;
+		var minute = (this.game.minute < 10) ? "0" + this.game.minute : this.game.minute;
+		var suffix;
+		if (this.game.hour < 10){
+			suffix = "AM";
+			hour = " " + this.game.hour;
+		}else if(this.game.hour < 12){
+			suffix = "AM";
+			hour = this.game.hour;
+		}else if (this.game.hour == 12){
+			suffix = "PM";
+			hour = this.game.hour;
+		}else if(this.game.hour < 22){
+			suffix = "PM";
+			hour = " " + this.game.hour % 12;
+		}else{
+			suffix = "PM";
+			hour = this.game.hour % 12;
+		}
+		timeText = hour + ":" + minute + suffix;
+
+		var newTimeText = timeText.replace("0", "O");
+		while (newTimeText != timeText){
+			timeText = newTimeText;
+			newTimeText = newTimeText.replace("0", "O");
+		}
+		$("#displayTime").text(newTimeText);
+	}
+}
+
+var speedButtons = ["#pauseButton", "#continueButton", "#fastButton", "#fasterButton"];
+
+function showAllSpeedButtons(){
+	for (var i = 0; i < speedButtons.length; i++){
+		console.log("showing button: " + speedButtons[i]);
+		$(speedButtons[i]).show();
+	}
+}
+
+function disableOnlyOneSpeedButton(buttonId){
+	for (var i = 0; i < speedButtons.length; i++){
+		var disabled = false;
+		if (speedButtons[i] == buttonId){
+			disabled = true;
+		}
+		$(speedButtons[i]).attr('disabled', disabled);
 	}
 }
 
 function initGameAndUI(){
 	game = new Game();
 	$("#startButton").hide();
-	$("#pauseButton").show();
+	showAllSpeedButtons();
+	disableOnlyOneSpeedButton("#continueButton");
+	$("#displayDate, #displayTime, #displayMoney").show();
 }
 
 function pauseGame(){
 	game.pauseTime();
-	$("#pauseButton").hide();
-	$("#continueButton").show();
+	disableOnlyOneSpeedButton("#pauseButton");
+}
+
+function fastForward(){
+	adjustGameSpeed(300);
+	disableOnlyOneSpeedButton("#fastButton");
+}
+
+function fasterForward(){
+	adjustGameSpeed(100);
+	disableOnlyOneSpeedButton("#fasterButton");
 }
 
 function continueGame(){
+	game.speed = 1000;
 	game.startTime();
-	$("#pauseButton").show();
-	$("#continueButton").hide();
+	disableOnlyOneSpeedButton("#continueButton");
+}
+
+function adjustGameSpeed(speed){
+	game.adjustTimeSpeed(speed);
 }
 
 function addChangeButton(){
@@ -222,6 +309,7 @@ function addChangeButton(){
 		game.ui.displayObjectInfo(machineId);
 	}else{
 		$("#addChangeModal").modal("hide");
+		$("#alertSpace").prepend(UI.createAlert("Couldn't add change. Not enough funds.", "alert-danger"));
 	}
 
 }
