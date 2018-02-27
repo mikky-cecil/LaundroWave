@@ -8,7 +8,7 @@ div.container{
 	display: block;
 }
 
-div.row{
+#gameContainer>div.row{
 	margin-top: 10%;
 }
 
@@ -46,7 +46,15 @@ canvas#demoCanvas{
 	white-space: pre;
 }
 
-#displayInfo>.card-header{
+#displayInfo .card-header .card-title{
 	font-size: 18px;
 	font-weight: 500;
+}
+
+#displayInfo .card-header table{
+	width: 100%;
+}
+
+#displayInfo .card-header #machineBadges{
+	text-align: right;
 }

@@ -23,6 +23,11 @@ class Laundromat {
 		return layout;
 	}
 
+	setMoney(money){
+		this.money = money;
+		game.ui.updateFundsDisplay();
+	}
+
 	addMachineToLayout(machine, x, y){
 		// First check to make sure nothing else is in the way
 		var blocked = false;
@@ -48,8 +53,7 @@ class Laundromat {
 
 	payRent(){
 		// let player go into the negatives for now, will implement debt handling later
-		this.money -= this.rent;
-		game.ui.updateFundsDisplay();
+		this.setMoney(this.money - this.rent);
 	}
 
 	findMachine(machineId){
@@ -138,148 +142,6 @@ class Load {
 	}
 }
 
-var idCounter = 0;
-
-class Machine {
-	constructor(laundromat){
-		this.laundromat = laundromat;
-		this.objectId = 0;
-		this.name = "";
-		this.cost = 0;
-		this.working = true;
-		this.timeUntilFree = 0;
-		this.duration = 0;
-		this.width = 1;
-		this.height = 1;
-	}
-
-	static newId(typeId){
-		idCounter++;
-		return typeId + idCounter;
-	}
-
-	/*set working(working){
-		this.working = working;
-		this.dispatchEvent(workingChanged);
-	}*/
-
-	payMachine(customer){
-		if (customer.usableMoney >= this.cost){
-			customer.usableMoney -= this.cost;
-			this.laundromat.usableMoney += this.cost;
-			return true;
-		}else{
-			return false;
-		}
-	}
-
-	passTime(time){
-		if (this.duration == 0 || this.timeUntilFree == 0){
-			return;
-		}
-		this.timeUntilFree -= time;
-	}
-}
-
-class Washer extends Machine {
-	constructor(laundromat){
-		super(laundromat);
-		this.objectId = Washer.newId();
-		this.name = "washer";
-		this.duration = 3;
-		this.cost = 2;
-		this.width = 2;
-		this.height = 2;
-	}
-
-	static newId(){
-		return super.newId("W");
-	}
-
-	wash(customer, load){
-		if (this.working && this.timeUntilFree == 0 && super.payMachine(customer)){
-			load.washed = true;
-			this.timeUntilFree = this.duration;
-			return true;
-		}else{
-			return false;
-		}
-	}
-}
-
-class Dryer extends Machine {
-	constructor(laundromat){
-		super(laundromat);
-		this.objectId = Dryer.newId();
-		this.name = "dryer";
-		this.duration = 3;
-		this.cost = 2;
-		this.width = 2;
-		this.height = 2;
-	}
-
-	static newId(){
-		return super.newId("D");
-	}
-
-	dry(customer, load){
-		if (!load.washed){
-			return false;
-		}
-
-		if (this.working && this.timeUntilFree == 0 && super.payMachine(customer)){
-			load.dried = true;
-			this.timeUntilFree = this.duration;
-			return true;
-		}else{
-			return false;
-		}
-	}
-}
-
-class ChangeMachine extends Machine {
-	constructor(laundromat){
-		super(laundromat);
-		this.objectId = ChangeMachine.newId();
-		this.name = "change machine";
-		this.capacity = 500;
-		this.currentChange = 0;
-	}
-
-	static newId(){
-		return super.newId("C");
-	}
-
-	addChange(change){
-		if (change <= this.laundromat.money){
-			this.laundromat.money -= change;
-			this.currentChange += change;
-			if (this.currentChange > 0){
-				this.working = true;
-			}
-			return true;
-		}else{
-			return false;
-		}
-	}
-
-	giveChange(customer, change){
-		if (change <= this.currentChange){
-			this.currentChange -= change;
-			customer.usableMoney += change;
-			if (game.ui.isObjectDisplayed(this.objectId)){
-				game.ui.displayObjectInfo(this.objectId);
-				// TODO: THIS NEEDS TO BE AN EVENT!!!! decoupling and all that!!!!
-			}
-			return true;
-		}else{
-			this.working = false;
-			return false;
-		}
-	}
-
-}
-
 class Game {
 	constructor(){
 		this.month = 1;
@@ -364,21 +226,18 @@ class Game {
 		this.passTime(tickSize);
 		this.ui.updateTimeDisplay();
 
-		// Pay rent
+		// Pay rent once a month
 		if (this.day == 1 && this.hour == 8 && this.minute == 0){
 			this.laundromat.payRent();
-			console.log("Rent paid on " + this.month + "/" + this.day);
+			this.ui.addAlertToAlertSpace(
+				"Rent paid on " + this.month + "/" + this.day + " (-$" + this.laundromat.rent + ")", 
+				"alert-info");
 		}
 
-		// Pass time on machines, update ui if machine is broken
+		// Pass time on machines
 		var machines = this.laundromat.machines.washers.concat(this.laundromat.machines.dryers);
 		for (var i = 0; i < machines.length; i++){
 			machines[i].passTime(tickSize);
-			this.ui.updateMachine(machines[i]);
-		}
-		machines = this.laundromat.machines.changeMachines;
-		for (var i = 0; i < machines.length; i++){
-			this.ui.updateMachine(machines[i]);
 		}
 
 		// Add customers
@@ -391,7 +250,7 @@ class Game {
 			return !c.hasLeft;
 		});
 
-		// Update UI
+		// Debug
 		console.log(this.month + "/" + this.day + ": You have $" + this.laundromat.money);
 	}
 

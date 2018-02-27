@@ -15,6 +15,10 @@ class UI{
 		this.gridShapes = [];
 	}
 
+	get alertSpace(){
+		return $("#alertSpace");
+	}
+
 	static createAlert(message, colorClass){
 		var closeX = $( document.createElement("span") );
 		closeX.attr({
@@ -169,42 +173,48 @@ class UI{
 		var machine = this.game.laundromat.findMachine(machineId);
 
 		var card = "#displayInfo";
-		var title = "#displayInfo>.card-header>.card-title";
+		var title = "#displayInfo>.card-header .card-title";
 		var info = "#displayInfo>.card-body";
 		var footer = "#displayInfo>.card-footer";
 		var actionButton = "#objectActionButton";
 		var actionButtonContainer = "#displayInfo>.card-footer";
 
-		$(info).text(machineId);
+		// Clear old stuff
 		$("#needsServiceBadge, #inUseBadge").hide();
-		$(card).data("objectId", machineId);
+		$(actionButton).off("click");
 
+		// Every machine needs this
+		$(title).text(machine.name);
+		$(card).data("objectId", machineId);
+		$(info).html("<b>Current Change:</b> " + machine.currentChange);
 		if (!machine.working){
 			$("#needsServiceBadge").show();
 		}
 
+		// Different for each type of machine
 		if (machine.objectId.startsWith("C")){
-			$(title).text("Change Machine");
-			$(info).html("<b>Current Change:</b> " + machine.currentChange);
 			$(actionButtonContainer).show();
 			$(actionButton).text("Add Change").show().click(function(){
 				 $("#addChangeModal").modal("show");
 				 $("#addChangeModal form #machineId").val(machineId);
 			});
+			$(actionButton).attr({disabled: false});
 		}else if (machine.objectId.startsWith("W") || machine.objectId.startsWith("D")){
-			if (machine.objectId.startsWith("W")){
-				$(title).text("Washing Machine");
-			}else{
-				$(title).text("Dryer");
-			}
-
 			if (machine.timeUntilFree > 0){
-				$("#inUseBadge").show();
-				$(info).html("<b>Time left:</b> " + machine.timeUntilFree);
-			}else{
-				$(info).text("");
+				$("#inUseBadge").text(machine.timeUntilFree + ":00").show();
+				// $(info).append("<br><b>Time left:</b> " + machine.timeUntilFree);
 			}
-			$(actionButtonContainer).hide();
+			var _this = this;
+			$(actionButton).text("Collect Change").show().click(function(){
+				var change = machine.collectChange();
+				_this.addAlertToAlertSpace("Collected $" + change + " from " + machine.name, "alert-success");
+				console.log("Collecting change!");
+			});
+			if (machine.currentChange < 1){
+				$(actionButton).attr({disabled: true});
+			}else{
+				$(actionButton).attr({disabled: false});
+			}
 		}
 
 		$(card).show();
@@ -244,6 +254,10 @@ class UI{
 			newTimeText = newTimeText.replace("0", "O");
 		}
 		$("#displayTime").text(newTimeText);
+	}
+
+	addAlertToAlertSpace(message, colorClass){
+		this.alertSpace.prepend(UI.createAlert(message, colorClass));
 	}
 }
 
@@ -305,11 +319,11 @@ function addChangeButton(){
 
 	if (game.laundromat.findMachine(machineId).addChange(change)){
 		$("#addChangeModal").modal("hide");
-		$("#alertSpace").prepend(UI.createAlert("Added $" + change + " to the change machine.", "alert-success"));
+		game.ui.addAlertToAlertSpace("Added $" + change + " to the change machine.", "alert-success");
 		game.ui.displayObjectInfo(machineId);
 	}else{
 		$("#addChangeModal").modal("hide");
-		$("#alertSpace").prepend(UI.createAlert("Couldn't add change. Not enough funds.", "alert-danger"));
+		game.ui.addAlertToAlertSpace("Couldn't add change. Not enough funds.", "alert-danger");
 	}
 
 }

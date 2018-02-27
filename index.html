@@ -11,12 +11,13 @@
 	<script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
 
 	<script src="https://use.fontawesome.com/91d6c4113e.js"></script>
+	<script src="./machines.js"></script>
 	<script src="./game.js"></script>
 	<script src="./ui.js"></script>
 </head>
 
 <body>
-	<div class="container">
+	<div id="gameContainer" class="container">
 
 		<!-- Game Screen -->
 		<div class="row">
@@ -49,9 +50,17 @@
 				<div id="alertSpace"></div>
 				<div id="displayInfo" class="card bg-light">
 					<div class="card-header">
-						<span class="card-title">Info</span>
-						<span id="needsServiceBadge" class="badge badge-danger">Needs Service</span>
-						<span id="inUseBadge" class="badge badge-primary">In Use</span>
+						<table>
+							<tr>
+								<td>
+									<span class="card-title">Info</span>
+								</td>
+								<td id="machineBadges">
+									<span id="needsServiceBadge" class="badge badge-danger"><i class="fa fa-exclamation-circle" aria-hidden="true"></i></span> 
+									<span id="inUseBadge" class="badge badge-info"></span> 
+								</td>
+							</tr>
+						</table>
 					</div>
 					<div class="card-body">
 						info will go here
